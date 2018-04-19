@@ -5,7 +5,7 @@ Created on Thu Apr 12 14:26:03 2018
 @author: sinkovitsd
 """
 
-from math import sin, cos, degrees
+from math import sin, cos, degrees, fabs
 from vec2d import Vec2d
 import pygame
 
@@ -31,10 +31,12 @@ class Polygon:
         center = Vec2d(0,0)
         for i in range(len(pp)):
             #> area of triangle, and add to total area
-            a = pp[i].cross(pp[i-1])/2
+            a = fabs(pp[i].cross(pp[i-1])/2)
             self.area += a
             #> moment of triange about vertex
-            self.moment += (1/6)*(density*self.area)*(pp[i-1].mag2() + pp[i].mag2() + pp[i-1]*pp[i])
+            self.moment += (1/6)*(density*self.area)*(pp[i-1].mag2() + pp[i].mag2() + pp[i-1].dot(pp[i]))
+            tmpMom = (1/6)*(density*self.area)*(pp[i-1].mag2() + pp[i].mag2() + pp[i-1].dot(pp[i]))
+            print("adding to moment: ", tmpMom)
             #> add center of mass of triange to center of mass of shape
             center += a*(pp[i] + pp[i-1])/3
             pass
@@ -56,25 +58,39 @@ class Polygon:
 
         # Recalculate moment around the center of mass as a check
         moment = 0
+        print("initialized moment to ", moment)
         for i in range(len(pp)):
             #> same as above loop to tally moment of each triangle about vertex
-            pass
+            moment += (1/6)*(density*self.area)*(pp[i-1].mag2() + pp[i].mag2() + pp[i-1].dot(pp[i]))
+            tmpMom = (1/6)*(density*self.area)*(pp[i-1].mag2() + pp[i].mag2() + pp[i-1].dot(pp[i]))
+            print("adding to moment: ", tmpMom)
+            
         print("moment =", moment)
         
         # Calculate normals to each points
         self.orignormals = []
         for i in range(len(pp)):
             #> calculate normal here and append to orignormals
-            pass
-        #print("orignormals =", self.orignormals)
+            self.orignormals.append((pp[i-1] - pp[i]).perpendicular_normal())
+        print("orignormals =", self.orignormals)
         
         # Calculate rotated points and normals
+        c = cos(angle)
+        s = sin(angle)
+        print("cos: ", c)
+        print("sine: ", s)
         self.points = []
         for p in self.origpoints:
-            self.points.append(Vec2d(0,0))
+            self.points.append(
+                    Vec2d(p.x * c - p.y * s, 
+                          p.x * s + p.y * c )
+                    )
         self.normals = []
         for n in self.orignormals:
-            self.normals.append(Vec2d(0,0))
+            self.normals.append(
+                     Vec2d(n.x * c - n.y * s, 
+                          n.x * s + n.y * c )
+                    )
         self.update_points_normals()
                 
         self.mom = self.mass*self.vel
@@ -122,8 +138,11 @@ class Polygon:
     def draw(self, screen, coords):
         # Draw polygon
         points = []
+        count = 0
         for p in self.points:
             points.append(coords.pos_to_screen(self.pos + p))
+            #print("point found: ", points[count], "at Index: ", count)
+            count += 1
         pygame.draw.polygon(screen, self.color, points)
         if True:
             for i in range(len(points)):

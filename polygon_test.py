@@ -88,7 +88,9 @@ def main():
     length = 2
     height = 1
     area = length*height
-    objects.append(Polygon(Vec2d(0,-1), Vec2d(0,0), 1, make_rectangle(length, height), GRAY, 0, -1))
+    objects.append(Polygon(Vec2d(0,-1), Vec2d(0,0), 1, make_rectangle(length, height), BLUE, 0, -1))
+    print("Points: ", objects[0].points)
+    print("Origpoints: ", objects[0].origpoints)
     print("moment =", area/12*(length**2 + height**2))
     #objects.append(Polygon(Vec2d(0,1), Vec2d(0,0), 1, make_polygon(0.2,4,0,10), RED, 0, 1))
     #objects.append(Polygon(Vec2d(1,0), Vec2d(0,0), 1, make_polygon(0.3,7,0,3), BLUE, 0, -0.4))
