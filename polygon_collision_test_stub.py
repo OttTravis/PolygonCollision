@@ -77,6 +77,7 @@ def check_collision(a, b, result=[]):
                 result.extend(result1)
                 return True
                 """
+        
     return False       
 
 def main():

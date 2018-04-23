@@ -18,7 +18,7 @@ class Polygon:
         self.angvel = angvel
         self.force = Vec2d(0,0)
         self.torque = 0
-
+        self.type = "polygon"
         # Set origpoints
         self.origpoints = []
         for p in points:
@@ -154,6 +154,7 @@ class Polygon:
     def check_collision(self, other, result=[]):
         result.clear() # See polygon_collision_test.py in check_collision()
         overlap = 1e99
+        maxd = -1e99
         if other.type == "polygon":            
             """ Self supplies the vertices.  Other provides the sides (walls).
                 For each wall, find the point that penetrates the MOST, 
@@ -164,10 +165,27 @@ class Polygon:
                 return True. """
             for i in range(len(other.normals)):
                 # Fill in
-                pass
+                maxd = -1e99
+                maxj = -1
+                maxNormal = Vec2d(0,0)
                 for j in range(len(self.points)):
                     # Fill in
-                    pass
+                    d = ((other.pos + other.points[j]) - (self.pos + self.points[j])).dot(other.normals[i])
+                    if(d > maxd):
+                        maxd = d
+                        maxj = j
+                        maxNormal = other.normals[i]
+                        
+                if(maxd < overlap):
+                    if(maxd < 0):
+                        return False 
+                    overlap = maxd
+                    point = (self.pos + self.points[maxj])
+                    normal = maxNormal
+                    
+                    
+                    
+                
             result.extend([self, other, overlap, normal, point])
             return True
 
