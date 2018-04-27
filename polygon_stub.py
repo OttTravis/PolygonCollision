@@ -123,6 +123,8 @@ class Polygon:
         c = cos(self.angle)
         s = sin(self.angle)
         #> use s and c to calculate points and normals rotated
+        for i in range(len(self.normals)):
+            self.normals[i] = 
 
     def update(self, dt):
         self.update_mom(dt)
@@ -170,14 +172,14 @@ class Polygon:
                 maxNormal = Vec2d(0,0)
                 for j in range(len(self.points)):
                     # Fill in
-                    d = ((other.pos + other.points[j]) - (self.pos + self.points[j])).dot(other.normals[i])
+                    d = ((other.pos + other.points[i]) - (self.pos + self.points[j])).dot(other.normals[i])
                     if(d > maxd):
                         maxd = d
                         maxj = j
                         maxNormal = other.normals[i]
                         
                 if(maxd < overlap):
-                    if(maxd < 0):
+                    if(maxd < 1e-13):
                         return False 
                     overlap = maxd
                     point = (self.pos + self.points[maxj])

@@ -8,7 +8,8 @@ import pygame
 from vec2d import Vec2d
 from coords import Coords
 from polygon_stub import Polygon
-from math import sqrt, acos, degrees, sin, cos, radians
+from wall import Wall
+from math import sqrt, acos, degrees, sin, cos
 from random import uniform, randint, random
 
 # Define some colors
@@ -17,9 +18,6 @@ WHITE    = ( 255, 255, 255)
 GREEN    = (   0, 255,   0)
 RED      = ( 255,   0,   0)
 BLUE     = (   0,   0, 255)
-CYAN     = (   0, 255, 255)
-MAGENTA  = ( 255,   0, 255)
-YELLOW   = ( 255, 255,   0)
 GRAY     = ( 127, 127, 127)
 
 def random_color():
@@ -63,30 +61,41 @@ def make_rectangle(length, height, angle=0):
     return points
         
 def check_collision(a, b, result=[]):
-    """ I'm using result as a convenient way to pass back a list of data,
-        while still allowing a plain boolean as a return value.
-        It keeps the code very compact. Polygon.py does the same. 
-        You must use extend() because restult = rebinds the variable, 
-        so the data doesn't make it back to the calling function. """
     result.clear()
     result1 = []
     result2 = []
-    #a and b will retun true or false and will have to do the logic for one is true both is true and none is true
     if a.check_collision(b, result1) and b.check_collision(a, result2):
-        """ Pass back the result which has smaller overlap and return True. 
-            For example:
-                result.extend(result1)
-                return True
-                """
-        if result1[2] < result2[2]:
+        #print("collision")
+        #print(a.color, result1[2:])
+        #print(b.color, result2[2:])
+        if result1[2] < result2[2]: # compare overlaps, which is smaller
             result.extend(result1)
-            return True
-        elif result2[2] < result1[2]:
+        else:
             result.extend(result2)
-            return True
-            
+        return True
     return False       
 
+def resolve_collision(result):
+    (a, b, d, n, pt) = result
+    e = 0.7
+    mu = 0.4
+    m = a.mass*b.mass/(a.mass + b.mass) # reduced mass
+    
+    # depenetrate
+
+    # distance vectors
+    
+    # relative velocity of points in contact
+    # target velocity change (delta v)
+    
+    # matrix [[A B][C D]] [Jn Jt]T = [dvn dvt]T
+    
+    # Solve matrix equation
+        # check if friction is strong enough to prevent slipping
+        J = Jn*n + Jt*t
+        a.impulse( J, pt)
+        b.impulse(-J, pt)
+ 
 def main():
     pygame.init()
  
@@ -105,25 +114,46 @@ def main():
     objects = []
     points = (Vec2d(0,0),
               Vec2d(1,0),
+              Vec2d(1,0.5),
+              Vec2d(0.5,0.5),
+              Vec2d(0.5,1),
               Vec2d(0,1),
               )
-    zero = Vec2d(0,0)
-    objects.append(Polygon(zero, zero, 1, make_polygon(1.5,5,0,1.5), RED))
-    objects.append(Polygon(zero, zero, 1, make_polygon(2,3,0,0.5), BLUE))
+    #area = 2*1
+    #print(area/12*(2**2 + 1**2))
+    #area = 0.5*points[1].cross(points[2])
+    #print(area)
+    #print(abs(area/18*(points[1].mag2() + points[2].mag2() - points[1].dot(points[2]))))
+    length = 2
+    height = 1
+    area = length*height
+    objects.append(Polygon(Vec2d(0,-1), Vec2d(0,0), 1, make_rectangle(length, height), GRAY, 0, -1))
+    objects.append(Polygon(Vec2d(-0.5,1), Vec2d(0,0), 1, make_polygon(0.2,4,0,10), RED, 0, 1))
+    objects.append(Polygon(Vec2d(1,0), Vec2d(0,0), 1, make_polygon(0.3,7,0,3), BLUE, 0, -0.4))
+    objects.append(Polygon(Vec2d(-1,0), Vec2d(0,0), 1, make_polygon(1,3,0,0.5), GREEN, 0, 2))
+    
+    # Walls
+    objects.append(Wall(Vec2d(-1,-3), Vec2d(1,1), BLACK))
+    objects.append(Wall(Vec2d(-1,-3), Vec2d(-1,2), BLACK))
+    objects.append(Wall(Vec2d(-1,-3), Vec2d(0,1), BLACK))
+
     # -------- Main Program Loop -----------\
-    seconds_per_frame = 0.5
-    frame_rate = 1/seconds_per_frame
+    frame_rate = 60
+    n_per_frame = 1
+    playback_speed = 1 # 1 is real time, 10 is 10x real speed, etc.
+    dt = playback_speed/frame_rate/n_per_frame
+    #print("timestep =", dt)
     done = False
     paused = True
-    background_color = WHITE
-    collided = False
+    max_collisions = 1
+    result = []
     while not done:
         # --- Main event loop
         for event in pygame.event.get(): 
             if event.type == pygame.QUIT: # If user clicked close
                 done = True
                 paused = True
-            elif event.type == pygame.MOUSEBUTTONDOWN: 
+            elif event.type == pygame.MOUSEBUTTONDOWN:
                 paused = False
             elif event.type == pygame.KEYDOWN: 
                 if event.key == pygame.K_ESCAPE:
@@ -135,42 +165,32 @@ def main():
                     paused = False
         
         if not paused:
-            # If not overlapping, move objects to a new random position
-            if not collided:
+            for N in range(n_per_frame):
+                # Physics
+                # Calculate the force on each object
                 for obj in objects:
-                    x = uniform(width*0.25, width*0.75)
-                    y = uniform(height*0.25, height*0.75)
-                    obj.pos = coords.pos_to_coords(Vec2d(x,y))
-                    obj.angle = uniform(0, radians(360))
-                    obj.update_points_normals()
-    
-            # Check for collision
-            collided = False
-            result = []
-            for i1 in range(len(objects)):
-                for i2 in range(i1):
-                    if check_collision(objects[i1], objects[i2], result):
-                        collided = True
-        
+                    obj.force.zero()
+                    obj.force += Vec2d(0,-10) # gravity
+           
+                # Move each object according to physics
+                for obj in objects:
+                    obj.update(dt)
+                    
+                for i in range(max_collisions):
+                    collided = False
+                    for i1 in range(len(objects)):
+                        for i2 in range(i1):
+                            if check_collision(objects[i1], objects[i2], result):
+                                resolve_collision(result)
+                                collided = True
+                    if not collided: # if all collisions resolved, then we're done
+                        break
+ 
         # Drawing
-        if collided:
-            background_color = YELLOW
-        else:
-            background_color = WHITE
-        screen.fill(background_color) # wipe the screen
-
+        screen.fill(WHITE) # wipe the screen
         for obj in objects:
             obj.draw(screen, coords) # draw object to screen
 
-        if collided:
-            (obj1, obj2, overlap, normal, point) = result
-            pygame.draw.circle(screen, BLACK, coords.pos_to_screen(point).int(), 5)
-            pygame.draw.line(screen, BLACK, coords.pos_to_screen(point).int(),
-                             coords.pos_to_screen(point + overlap*normal).int())
-            # Separate objects accoring to position
-            """ Move obj1 overlap distance in the direction of normal. """
-            obj1.pos = obj1.pos + normal * overlap
-              
         # --- Update the screen with what we've drawn.
         pygame.display.update()
         
