@@ -123,8 +123,7 @@ class Polygon:
         c = cos(self.angle)
         s = sin(self.angle)
         #> use s and c to calculate points and normals rotated
-        for i in range(len(self.normals)):
-            self.normals[i] = 
+        
 
     def update(self, dt):
         self.update_mom(dt)
