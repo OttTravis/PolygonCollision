@@ -82,7 +82,7 @@ def resolve_collision(result):
     m = a.mass*b.mass/(a.mass + b.mass) # reduced mass
     
     # depenetrate
-
+    a.pos = a.pos + n * d
     # distance vectors
     
     # relative velocity of points in contact

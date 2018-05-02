@@ -122,6 +122,16 @@ class Polygon:
     def update_points_normals(self):
         c = cos(self.angle)
         s = sin(self.angle)
+        for i in self.normals:
+            x = i.x*c - i.y*s
+            y = i.x*s + i.y*c
+            i.x = x
+            i.y = y
+        for i in self.points:
+            x = i.x*c - i.y*s
+            y = i.x*s + i.y*c
+            i.x = x
+            i.y = y
         #> use s and c to calculate points and normals rotated
         
 
