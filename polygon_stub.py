@@ -122,16 +122,18 @@ class Polygon:
     def update_points_normals(self):
         c = cos(self.angle)
         s = sin(self.angle)
-        for i in self.normals:
-            x = i.x*c - i.y*s
-            y = i.x*s + i.y*c
-            i.x = x
-            i.y = y
-        for i in self.points:
-            x = i.x*c - i.y*s
-            y = i.x*s + i.y*c
-            i.x = x
-            i.y = y
+        for i in range(len(self.normals)):
+            n = self.orignormals[i]
+            x = n.x*c - n.y*s
+            y = n.x*s + n.y*c
+            self.normals[i].x = x
+            self.normals[i].y = y
+        for i in range(len(self.points)):
+            p = self.origpoints[i]
+            x = p.x*c - p.y*s
+            y = p.x*s + p.y*c
+            self.points[i].x = x
+            self.points[i].y = y
         #> use s and c to calculate points and normals rotated
         
 
@@ -193,7 +195,29 @@ class Polygon:
                     overlap = maxd
                     point = (self.pos + self.points[maxj])
                     normal = maxNormal
-                    
+            result.extend([self, other, overlap, normal, point])
+            return True
+        elif other.type == "wall":
+            for i in range(len(other.normal)):
+                # Fill in
+                maxd = -1e99
+                maxj = -1
+                maxNormal = Vec2d(0,0)
+                for j in range(len(self.points)):
+                    # Fill in
+                    d = ((other.pos) - (self.pos + self.points[j])).dot(other.normal)
+                    if(d > maxd):
+                        maxd = d
+                        maxj = j
+                        maxNormal = other.normal
+                        
+                if(maxd < overlap):
+                    if(maxd < 1e-13):
+                        return False 
+                    overlap = maxd
+                    point = (self.pos + self.points[maxj])
+                    normal = maxNormal
+            
                     
                     
                 

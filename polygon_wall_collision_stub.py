@@ -121,7 +121,7 @@ def resolve_collision(result):
         #perfect Friction
         Jn = (1 / det) * ((D * chgVn) - (B * chgVt))
         Jt = (1 / det) * ((-C * chgVn) + (A * chgVt))
-        if abs(Jt) > mu* abs(Jn):
+        if abs(Jt) > mu*Jn:
             #slinding Friction
             s = 0
             if Jt > 0:
@@ -136,7 +136,7 @@ def resolve_collision(result):
             Jn = (1/det) * ((D * chgVn) - (B * chgVt))
             Jt = s * mu * Jn
         # check if friction is strong enough to prevent slipping
-        J = Jn*n + Jt*t
+        J = (Jn*n) + (Jt*t)
         a.impulse( J, pt)
         b.impulse(-J, pt)
  
@@ -182,6 +182,7 @@ def main():
     objects.append(Wall(Vec2d(-1,-3), Vec2d(0,1), BLACK))
 
     # -------- Main Program Loop -----------\
+    #REDUCE TIME STEP TO INCREASE ACCURACY
     frame_rate = 60
     n_per_frame = 1
     playback_speed = 1 # 1 is real time, 10 is 10x real speed, etc.
@@ -189,7 +190,7 @@ def main():
     #print("timestep =", dt)
     done = False
     paused = True
-    max_collisions = 1
+    max_collisions = 10
     result = []
     while not done:
         # --- Main event loop
@@ -213,8 +214,9 @@ def main():
                 # Physics
                 # Calculate the force on each object
                 for obj in objects:
-                    obj.force.zero()
-                    obj.force += Vec2d(0,-10) # gravity
+                    if obj.type != "wall":  
+                        obj.force.zero()
+                        obj.force += obj.mass*Vec2d(0,-10) # gravity
            
                 # Move each object according to physics
                 for obj in objects:
