@@ -81,16 +81,60 @@ def resolve_collision(result):
     mu = 0.4
     m = a.mass*b.mass/(a.mass + b.mass) # reduced mass
     
+    t = n.perpendicular()
     # depenetrate
     a.pos = a.pos + n * d
     # distance vectors
     
     # relative velocity of points in contact
     # target velocity change (delta v)
+    ra = pt - a.pos
+    ran = ra.dot(n)
+    rat = ra.dot(t)
+    
+    rb = pt - b.pos
+    rbn = rb.dot(n)
+    rbt = rb.dot(t)
+    
+    vrel = (a.vel + a.angvel * ra.perpendicular()) - (b.vel + b.angvel * rb.perpendicular())
+    
+    chgVn = -(1 + e) * vrel.dot(n)
+    chgVt = -vrel.dot(t)
     
     # matrix [[A B][C D]] [Jn Jt]T = [dvn dvt]T
     
+    A = ((1/a.mass) + ((rat**2) / a.moment)) + ((1/b.mass) + (rbt**2)/b.moment)
+    
+    B = (-(ran * rat) / a.moment) - ((rbn * rbt) / b.moment)
+    
+    C = (-(ran * rat) / a.moment) - ((rbn * rbt) / b.moment)
+    
+    D = ((1/a.mass) + ((rat**2)/ a.moment)) + ((1/b.mass) + ((rbt**2)/b.moment))
+    
+    det = (A * D) - (B * C)
+    
+
+    
     # Solve matrix equation
+    #if they are heading towards each other
+    if chgVn > 0:
+        #perfect Friction
+        Jn = (1 / det) * ((D * chgVn) - (B * chgVt))
+        Jt = (1 / det) * ((-C * chgVn) + (A * chgVt))
+        if abs(Jt) > mu* abs(Jn):
+            #slinding Friction
+            s = 0
+            if Jt > 0:
+                s = 1
+            else:
+                s = -1  
+            A = ((1/a.mass) + ((rat**2) / a.moment)) + ((1/b.mass) + (rbt**2)/b.moment)
+            B = (-(ran * rat) / a.moment) - ((rbn * rbt) / b.moment)
+            C = -s*mu
+            D = 1
+            det = (A * D) - (B * C)
+            Jn = (1/det) * ((D * chgVn) - (B * chgVt))
+            Jt = s * mu * Jn
         # check if friction is strong enough to prevent slipping
         J = Jn*n + Jt*t
         a.impulse( J, pt)
