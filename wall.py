@@ -71,7 +71,7 @@ class Wall:
         pygame.draw.line(screen, self.color, start, end, 1)
     
     def check_collision(self, other, result=[]):
-        if other.type == "polygon":
+        if other.type == "polygon" or other.type == "stackSurface":
             result.extend([self, other, 1e99, None, None])
             return True
         elif other.type == "wall":

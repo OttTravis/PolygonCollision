@@ -1,0 +1,8 @@
+Run game.py to launch game
+
+Click to create a polygon. The game will pause so that you may place your polygon.
+Click again to place polygon. There is a small amount of time between placing a polygon and being able to create a new one.
+
+Try to fit as many polygons on the surface. The game ends when a polygon falls below the surface.
+
+*Currently collisions are highly unstable and you will most likely loose if the polygons ever come into contact with each other.

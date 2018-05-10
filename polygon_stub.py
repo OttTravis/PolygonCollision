@@ -10,7 +10,7 @@ from vec2d import Vec2d
 import pygame
 
 class Polygon:
-    def __init__(self, pos, vel, density, points, color, angle=0, angvel=0):
+    def __init__(self, pos, vel, density, points, color, angle=0, angvel=0, type="polygon"):
         self.pos = pos
         self.vel = vel
         self.color = color
@@ -18,7 +18,7 @@ class Polygon:
         self.angvel = angvel
         self.force = Vec2d(0,0)
         self.torque = 0
-        self.type = "polygon"
+        self.type = type
         # Set origpoints
         self.origpoints = []
         for p in points:
@@ -168,7 +168,7 @@ class Polygon:
         result.clear() # See polygon_collision_test.py in check_collision()
         overlap = 1e99
         maxd = -1e99
-        if other.type == "polygon":            
+        if (other.type == "polygon" or other.type == "stackSurface"):            
             """ Self supplies the vertices.  Other provides the sides (walls).
                 For each wall, find the point that penetrates the MOST, 
                 and record the magnitude of penetration.  If for one wall, 
