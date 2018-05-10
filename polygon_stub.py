@@ -157,12 +157,12 @@ class Polygon:
             #print("point found: ", points[count], "at Index: ", count)
             count += 1
         pygame.draw.polygon(screen, self.color, points)
-        if True:
-            for i in range(len(points)):
-                length = 50
-                n = coords.unitvec_to_other(self.normals[i])
-                p = (points[i] + points[i-1])/2
-                pygame.draw.line(screen, (0,0,0), p, p + length*n)
+#        if True:
+#            for i in range(len(points)):
+#                length = 50
+#                n = coords.unitvec_to_other(self.normals[i])
+#                p = (points[i] + points[i-1])/2
+#                pygame.draw.line(screen, (0,0,0), p, p + length*n)
     
     def check_collision(self, other, result=[]):
         result.clear() # See polygon_collision_test.py in check_collision()
